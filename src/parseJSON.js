@@ -1,15 +1,8 @@
-// this is what you would do if you were one to do things the easy way:
+ // this is what you would do if you were one to do things the easy way:
 // var parseJSON = JSON.parse;
 
 // but you're not, so you'll write it from scratch:
 var parseJSON = function(json) {
-
-  var at = 0;
-  var ch = json.charAt(at);
-  var next = function() { 
-    at++; 
-    ch = json.charAt(at);
-  };
 
   // booleans & null
   if (json === 'null') { return null; }
@@ -21,59 +14,76 @@ var parseJSON = function(json) {
     return Number(json);
   }  
 
+  // helpers for parsing strings
+  var at = 0;
+  var ch = json.charAt(at);
+  var next = function() { 
+    at++; 
+    ch = json.charAt(at);
+  };
+
   // string
-  if (json.startsWith('\"') && json.endsWith('\"')) {
+  if (json.startsWith('\"')) { 
     var output = '';
     next();
+    var escapeCount = 0;
     while (at < json.length - 1) {
       if (ch === '\\') {
+        escapeCount++;
         next();
         if (ch === '\\') {
+          escapeCount++;
           output += '\\';
         }
         if (ch === '\"') {
+          escapeCount = 0;
           output += '\"';
         }
       } else {
+        escapeCount = 0;
         output += ch;
       }
       next();   
     }
-    return output;
+    if (ch !== '\"' || escapeCount % 2 === 1) {
+      throw new SyntaxError;
+    } else {
+      return output;
+    }
   }  
 
-  
-
-  var checkIfArray = function (str) {
-    var opens = [];
-    var closes = [];
-    if (str[0] === '[' && str[str.length - 1] === ']') {
-      for (var i = 0; i < str.length; i++) {
-        if (str[i] === '[') {
-          opens.push(str[i]);
-        } else if (str[i] === ']') {
-          closes.push(str[i]);
-        }
+  // array
+  if (json[0] === '[') {
+    if (json[json.length - 1] === ']') {
+      var output = [];
+      if (json.length > 2) {
+        var arrayInner = json.slice(1, json.length - 1);
+        arrayInner.split(',').forEach(function (el) {
+          el = el.trim();
+          output.push(parseJSON(el));
+        });
       }
-      return (opens.length === closes.length);
+      return output;
+    } else {
+      throw new SyntaxError('Invalid JSON (unmatched brackets)');
     }
-    return false;
-  };
+  }
 
-  
-
-  if (checkIfArray(json)) {
-    var output = [];
-    if (json.length > 2) {
-      var arrayInner = json.slice(1, json.length - 1);
-      arrayInner.split(',').forEach(function (el) {
-        el = el.trim();
-        output.push(parseJSON(el));
-    
-      });
+  // object
+  if (json[0] === '{') {
+    if (json[json.length - 1] === '}') {
+      var output = {};
+      // if (json.length > 2) {
+      //   var objectInner = json.slice(1, json.length - 1);
+      //   objectInner.split(',').forEach(function (el) {
+      //     el = el.trim();
+      //     output.push(parseJSON(el));
+      //   });
+      // }
+      return output;
+    } else {
+      throw new SyntaxError('Invalid JSON (unmatched brackets)');
     }
-    //console.log(output);
-    return output;
   }
 
 };

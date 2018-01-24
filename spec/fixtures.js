@@ -44,6 +44,7 @@ parseableStrings = [
   // '{}',
   // '{"foo": "bar"}',
   '["one", "two"]',
+  // '["one, two", "three"]', // EG added this one
   // '{"a": "b", "c": "d"}',
   '[null,false,true]',
   // '{"foo": true, "bar": false, "baz": null}',
@@ -127,5 +128,8 @@ parseableStrings = [
 // JSON does not allow you to parse these strings
 unparseableStrings = [
   '["foo", "bar"',
-  '["foo", "bar\\"]'
+  '["foo", "bar\\"]',
+  '["foo", "bar\\\"]' // EG added this one and below
+  // '{"foo": "bar\"}',
+  // '{"foo:" "bar"}'
 ];
